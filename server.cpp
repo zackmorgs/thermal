@@ -14,10 +14,10 @@ public:
         if (startPath.empty()) {
             this->startPath = "./";
         }
+        this->watchMode = watchMode;
         std::cout << "Server initialized with start path: " << this->startPath << std::endl;
         if (watchMode) {
-            std::cout << "Watch mode is enabled" << std::endl;
-            scanDirectory();
+            this->startWatching();
         }
     }
 
@@ -25,9 +25,10 @@ public:
         if (!watchMode) {
             std::cout << "Watch mode is not enabled" << std::endl;
             return;
+        } else {
+            std::cout << "Watch mode is enabled" << std::endl;
+            // scanDirectory();
         }
-
-        std::cout << "Starting to monitor directory: " << startPath << std::endl;
         
         while (true) {
             checkForChanges();
@@ -39,20 +40,6 @@ private:
     std::string startPath;
     bool watchMode;
     std::unordered_map<std::string, std::filesystem::file_time_type> fileTimestamps;
-
-    void scanDirectory() {
-        std::cout << "Scanning directory for initial file state..." << std::endl;
-        try {
-            for (const auto& entry : fs::recursive_directory_iterator(startPath)) {
-                if (entry.is_regular_file()) {
-                    fileTimestamps[entry.path().string()] = entry.last_write_time();
-                }
-            }
-            std::cout << "Found " << fileTimestamps.size() << " files to monitor" << std::endl;
-        } catch (const std::exception& e) {
-            std::cerr << "Error scanning directory: " << e.what() << std::endl;
-        }
-    }
 
     void checkForChanges() {
         try {
@@ -67,12 +54,12 @@ private:
                         // New file
                         std::cout << "New file detected: " << filePath << std::endl;
                         fileTimestamps[filePath] = lastWriteTime;
-                        onFileChanged(filePath, "created");
+                        // onFileChanged(filePath, "created");
                     } else if (it->second != lastWriteTime) {
                         // Modified file
                         std::cout << "File modified: " << filePath << std::endl;
                         it->second = lastWriteTime;
-                        onFileChanged(filePath, "modified");
+                        // onFileChanged(filePath, "modified");
                     }
                 }
             }
@@ -82,7 +69,7 @@ private:
             while (it != fileTimestamps.end()) {
                 if (!fs::exists(it->first)) {
                     std::cout << "File deleted: " << it->first << std::endl;
-                    onFileChanged(it->first, "deleted");
+                    //onFileChanged(it->first, "deleted");
                     it = fileTimestamps.erase(it);
                 } else {
                     ++it;
@@ -91,16 +78,5 @@ private:
         } catch (const std::exception& e) {
             std::cerr << "Error checking for changes: " << e.what() << std::endl;
         }
-    }
-
-    void onFileChanged(const std::string& filePath, const std::string& changeType) {
-        // This is where you can add your file change handling logic
-        std::cout << "File change event: " << changeType << " - " << filePath << std::endl;
-        
-        // Add your custom logic here, for example:
-        // - Restart a server
-        // - Recompile code
-        // - Trigger a build process
-        // - Send notifications
     }
 };

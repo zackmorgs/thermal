@@ -3,6 +3,7 @@ I haven't coded in C++ in a while, so this is me messing around with it for the 
 
 ## Project Goals
 - fast http/https server
+- SPA-ready
 - hot-reload capability 
 - easy REST api integration?
 

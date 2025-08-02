@@ -1,9 +1,14 @@
 #include <iostream>
-#include "server.h"
+#include <string>
 
-Server::Server(const std::string& startPath) : startPath(startPath) {
-    if (startPath.empty()) {
-        this->startPath = "./";
+class Server {
+public:
+    Server(const std::string& startPath) {
+        if (startPath.empty()) {
+            this->startPath = "./";
+        }
+        std::cout << "Server initialized with start path: " << this->startPath << std::endl;
     }
-    std::cout << "Server initialized with start path: " << this->startPath << std::endl;
-}
+private:
+    std::string startPath;
+};

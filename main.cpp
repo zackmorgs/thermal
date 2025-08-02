@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "server.h"
+#include "server.cpp"
 
 namespace fs = std::filesystem;
 

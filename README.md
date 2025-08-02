@@ -13,3 +13,5 @@ I haven't coded in C++ in a while, so this is me messing around with it for the 
 - Clone the repo
 - Compile it:
     - `cd ./build; cmake --build .`
+- Run the executable
+    - ./Debug/thermal.exe "C:\path\to\your\server\root"

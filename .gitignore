@@ -41,3 +41,7 @@ Thumbs.db
 
 .vscode/
 .vs/
+\
+
+# ignore test server directory
+test_server/

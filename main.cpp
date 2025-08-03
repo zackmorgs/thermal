@@ -49,7 +49,13 @@ int main(int argc, char* argv[])
 	// Check if we found a path
 	if (!pathArg.empty()) {
 		// if path is found, create a server
-		Server server(pathArg, watchMode);		
+		Server server(pathArg, watchMode);
+		
+		if (!watchMode) {
+			// Start HTTP server
+			server.startServer();
+		}
+		// If watchMode is true, startWatching() is already called in constructor
 	} else {
 		std::cerr << "Error: No directory path provided." << std::endl;
 		std::cerr << "Usage: " << argv[0] << " [-w] <directory_path>" << std::endl;

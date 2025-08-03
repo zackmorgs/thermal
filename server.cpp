@@ -25,13 +25,7 @@ public:
     }
 
     void startWatching() {
-        if (!watchMode) {
-            std::cout << "Watch mode is not enabled" << std::endl;
-            return;
-        } else {
-            std::cout << "Watch mode is enabled" << std::endl;
-            // scanDirectory();
-        }
+        std::cout << "Watch mode is enabled" << std::endl;
         
         while (true) {
             checkForChanges();

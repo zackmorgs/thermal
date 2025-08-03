@@ -12,6 +12,7 @@ namespace fs = std::filesystem;
 int main(int argc, char* argv[])
 {
 	// if there are less than 2 arguments, print an error message
+	// this includes the program name and the path argument
 	if (argc < 2) {
 		std::cerr << "Error: No path provided. Please specify a directory path." << std::endl;
 		std::cerr << "Usage: " << argv[0] << " [-w] <directory_path>" << std::endl;
@@ -37,6 +38,9 @@ int main(int argc, char* argv[])
 				std::cout << "Using provided path: " << args[i] << std::endl;
 				pathArg = args[i];
 			} else {
+				// argument is not a path
+				std::cerr << "Error: Invalid directory path provided." << std::endl;
+				std::cerr << "Provide invalid input: " << args[i] << std::endl;
 				return 1;
 			}
 		}

@@ -5,12 +5,15 @@
 #include <thread>
 #include <unordered_map>
 
+
+
 namespace fs = std::filesystem;
 
 class Server {
 public:
-    Server(const std::string& startPath, bool watchMode = false) 
-        : startPath(startPath), watchMode(watchMode) {
+    Server(const std::string& startPath, bool watchMode = false)
+    {
+        this->startPath = startPath;
         if (startPath.empty()) {
             this->startPath = "./";
         }

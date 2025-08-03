@@ -1,0 +1,10 @@
+^C:\USERS\ZACKM\SOURCE\REPOS\THERMAL\BUILD\CMAKEFILES\768FE74EBA0C1B7530EF43EB8A92C42B\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/zackm/source/repos/thermal -BC:/Users/zackm/source/repos/thermal/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/zackm/source/repos/thermal/build/thermal.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

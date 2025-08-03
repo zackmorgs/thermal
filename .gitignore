@@ -1,5 +1,4 @@
 # Build directories (you might use ./build/ or ./out/)
-build/
 out/
 CMakeFiles/
 CMakeCache.txt

@@ -247,6 +247,13 @@ textarea {
 }
 
 /* Custom styles - H5BP CSS ends here */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: "DM Sans", sans-serif;
   font-optical-sizing: auto;
@@ -254,6 +261,7 @@ textarea {
 
 body {
   background-color:#f1f1f1;
+  margin:0;
 }
 
 #root {
@@ -274,6 +282,7 @@ body {
 }
 #logo {
   color:#b2000d;
+  font-weight: 300;
 }
 
 #logo_img {

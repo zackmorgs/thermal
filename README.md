@@ -19,6 +19,7 @@ I haven't coded in C++ in a while, so this is me messing around with it for the 
 - Install cmake:
     - `choco install cmake`
 - Clone the repo
+    - `git clone https://github.com/zackmorgs/thermal.git ./my-project`
 - Compile it:
     - `cd ./build; cmake --build .`
 - Run the executable

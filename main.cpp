@@ -37,11 +37,6 @@ int main(int argc, char* argv[])
 			if (fs::exists(args[i]) && fs::is_directory(args[i])) {
 				std::cout << "Using provided path: " << args[i] << std::endl;
 				pathArg = args[i];
-			} else {
-				// argument is not a path
-				std::cerr << "Error: Invalid directory path provided." << std::endl;
-				std::cerr << "Provide invalid input: " << args[i] << std::endl;
-				return 1;
 			}
 		}
 	}
@@ -61,8 +56,6 @@ int main(int argc, char* argv[])
 		std::cerr << "Usage: " << argv[0] << " [-w] <directory_path>" << std::endl;
 		return 1;
 	}
-	
-
 	
 	return 0;
 }

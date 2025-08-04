@@ -5,13 +5,15 @@
 #include <thread>
 #include <fstream>
 #include <sstream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
-#pragma comment(lib, "ws2_32.lib")
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <cstring>
 
 namespace fs = std::filesystem;
 
+// contructor, initializes startPath and watchMode
 Server::Server(const std::string& startPath, bool watchMode, int port) 
     : startPath(startPath), watchMode(watchMode), port(port) {
     if (this->startPath.empty()) {
@@ -21,6 +23,7 @@ Server::Server(const std::string& startPath, bool watchMode, int port)
     std::cout << "Port configured: " << this->port << std::endl;
 }
 
+// file change detection method
 void Server::startWatching() {
     std::cout << "Watch mode is enabled" << std::endl;
     
@@ -33,57 +36,58 @@ void Server::startWatching() {
     }
 }
 
+// start server method
 void Server::startServer() {
     std::cout << "Server started at path: " << startPath << std::endl;
     
-    // Initialize Winsock
-    WSADATA wsaData;
-    int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
-    if (iResult != 0) {
-        std::cerr << "WSAStartup failed: " << iResult << std::endl;
+    // Create socket
+    int listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (listenSocket < 0) {
+        std::cerr << "Error creating socket: " << strerror(errno) << std::endl;
         return;
     }
     
-    // Create socket
-    SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (listenSocket == INVALID_SOCKET) {
-        std::cerr << "Error creating socket: " << WSAGetLastError() << std::endl;
-        WSACleanup();
+    // Set socket options to reuse address
+    int opt = 1;
+    if (setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        std::cerr << "Error setting socket options: " << strerror(errno) << std::endl;
+        close(listenSocket);
         return;
     }
     
     // Setup address
     sockaddr_in service;
+    memset(&service, 0, sizeof(service));
     service.sin_family = AF_INET;
     service.sin_addr.s_addr = INADDR_ANY;
     service.sin_port = htons(port); // Use configurable port
     
     // Bind socket
-    if (bind(listenSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
-        std::cerr << "Bind failed on port " << port << ": " << WSAGetLastError() << std::endl;
-        closesocket(listenSocket);
-        WSACleanup();
+    if (bind(listenSocket, (struct sockaddr*)&service, sizeof(service)) < 0) {
+        std::cerr << "Bind failed on port " << port << ": " << strerror(errno) << std::endl;
+        close(listenSocket);
         return;
     }
     
     // Listen for connections
-    if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
-        std::cerr << "Listen failed: " << WSAGetLastError() << std::endl;
-        closesocket(listenSocket);
-        WSACleanup();
+    if (listen(listenSocket, SOMAXCONN) < 0) {
+        std::cerr << "Listen failed: " << strerror(errno) << std::endl;
+        close(listenSocket);
         return;
     }
     
     std::cout << "Server is running on http://localhost:" << port << std::endl;
     std::cout << "Serving files from: " << startPath << std::endl; 
-    std::string browserStart = "start http://localhost:" + std::to_string(port);  
+    
+    // Try to open browser (Ubuntu-compatible)
+    std::string browserStart = "xdg-open http://localhost:" + std::to_string(port) + " 2>/dev/null &";  
     system(browserStart.c_str());
 
     // Accept connections
     while (true) {
-        SOCKET clientSocket = accept(listenSocket, NULL, NULL);
-        if (clientSocket == INVALID_SOCKET) {
-            std::cerr << "Accept failed: " << WSAGetLastError() << std::endl;
+        int clientSocket = accept(listenSocket, NULL, NULL);
+        if (clientSocket < 0) {
+            std::cerr << "Accept failed: " << strerror(errno) << std::endl;
             continue;
         }
         
@@ -93,8 +97,7 @@ void Server::startServer() {
         }).detach();
     }
     
-    closesocket(listenSocket);
-    WSACleanup();
+    close(listenSocket);
 }
 
 void Server::checkForChanges() {
@@ -172,10 +175,10 @@ void Server::notifyClients(const std::string& message) {
     
     auto it = sseClients.begin();
     while (it != sseClients.end()) {
-        int result = send(*it, sseMessage.c_str(), static_cast<int>(sseMessage.length()), 0);
-        if (result == SOCKET_ERROR) {
+        ssize_t result = send(*it, sseMessage.c_str(), sseMessage.length(), 0);
+        if (result < 0) {
             // Client disconnected, remove from list
-            closesocket(*it);
+            close(*it);
             it = sseClients.erase(it);
         } else {
             ++it;
@@ -183,9 +186,9 @@ void Server::notifyClients(const std::string& message) {
     }
 }
 
-void Server::handleClient(SOCKET clientSocket) {
+void Server::handleClient(int clientSocket) {
     char buffer[4096];
-    int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+    ssize_t bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
     
     if (bytesReceived > 0) {
         buffer[bytesReceived] = '\0';
@@ -214,10 +217,10 @@ void Server::handleClient(SOCKET clientSocket) {
         serveFile(clientSocket, path);
     }
     
-    closesocket(clientSocket);
+    close(clientSocket);
 }
 
-void Server::handleSSE(SOCKET clientSocket) {
+void Server::handleSSE(int clientSocket) {
     // Send SSE headers
     std::string headers = 
         "HTTP/1.1 200 OK\r\n"
@@ -226,7 +229,7 @@ void Server::handleSSE(SOCKET clientSocket) {
         "Connection: keep-alive\r\n"
         "Access-Control-Allow-Origin: *\r\n"
         "\r\n";
-    send(clientSocket, headers.c_str(), static_cast<int>(headers.length()), 0);
+    send(clientSocket, headers.c_str(), headers.length(), 0);
     
     // Add client to SSE list
     {
@@ -239,7 +242,7 @@ void Server::handleSSE(SOCKET clientSocket) {
     // Keep connection alive (it will be closed when client disconnects or on error)
 }
 
-void Server::serveFile(SOCKET clientSocket, const std::string& requestedPath) {
+void Server::serveFile(int clientSocket, const std::string& requestedPath) {
     std::string fullPath = startPath + "/" + requestedPath;
     
     // Check if file exists and is within served directory
@@ -251,7 +254,7 @@ void Server::serveFile(SOCKET clientSocket, const std::string& requestedPath) {
         "Content-Length: 44\r\n"
         "\r\n"
         "<html><body><h1>404 Not Found</h1></body></html>";
-        send(clientSocket, response.c_str(), static_cast<int>(response.length()), 0);
+        send(clientSocket, response.c_str(), response.length(), 0);
         return;
     }
     
@@ -265,7 +268,7 @@ void Server::serveFile(SOCKET clientSocket, const std::string& requestedPath) {
         "Content-Length: 58\r\n"
         "\r\n"
         "<html><body><h1>500 Internal Server Error</h1></body></html>";
-        send(clientSocket, response.c_str(), static_cast<int>(response.length()), 0);
+        send(clientSocket, response.c_str(), response.length(), 0);
         return;
     }
     
@@ -289,18 +292,18 @@ void Server::serveFile(SOCKET clientSocket, const std::string& requestedPath) {
     "Content-Type: " + contentType + "\r\n"
     "Content-Length: " + std::to_string(fileSize) + "\r\n"
     "\r\n";
-    send(clientSocket, headers.c_str(), static_cast<int>(headers.length()), 0);
+    send(clientSocket, headers.c_str(), headers.length(), 0);
     
     // Send file content
     char fileBuffer[4096];
     while (file.read(fileBuffer, sizeof(fileBuffer)) || file.gcount() > 0) {
-        send(clientSocket, fileBuffer, static_cast<int>(file.gcount()), 0);
+        send(clientSocket, fileBuffer, file.gcount(), 0);
     }
     
     file.close();
 }
 
-void Server::serveHTMLWithHotReload(SOCKET clientSocket, const std::string& fullPath) {
+void Server::serveHTMLWithHotReload(int clientSocket, const std::string& fullPath) {
     std::ifstream file(fullPath);
     if (!file.is_open()) {
         std::string response = 
@@ -309,7 +312,7 @@ void Server::serveHTMLWithHotReload(SOCKET clientSocket, const std::string& full
             "Content-Length: 58\r\n"
             "\r\n"
             "<html><body><h1>500 Internal Server Error</h1></body></html>";
-        send(clientSocket, response.c_str(), static_cast<int>(response.length()), 0);
+        send(clientSocket, response.c_str(), response.length(), 0);
         return;
     }
     
@@ -355,8 +358,8 @@ void Server::serveHTMLWithHotReload(SOCKET clientSocket, const std::string& full
         "Content-Type: text/html\r\n"
         "Content-Length: " + std::to_string(content.length()) + "\r\n"
         "\r\n";
-    send(clientSocket, headers.c_str(), static_cast<int>(headers.length()), 0);
-    send(clientSocket, content.c_str(), static_cast<int>(content.length()), 0);
+    send(clientSocket, headers.c_str(), headers.length(), 0);
+    send(clientSocket, content.c_str(), content.length(), 0);
 }
 
 std::string Server::getContentType(const std::string& path) {

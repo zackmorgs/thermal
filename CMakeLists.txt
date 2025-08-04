@@ -1,12 +1,6 @@
 ﻿# CMakeList.txt : CMake project for thermal server
 cmake_minimum_required(VERSION 3.15)
 
-# Enable Hot Reload for MSVC compilers if supported.
-if (POLICY CMP0141)
-  cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
-endif()
-
 project("thermal" VERSION 1.0.0 LANGUAGES CXX)
 
 # Set C++ standard
@@ -30,10 +24,9 @@ set(HEADERS
 # Create executable
 add_executable(thermal ${SOURCES} ${HEADERS})
 
-# Windows-specific libraries
-if(WIN32)
-    target_link_libraries(thermal ws2_32)
-endif()
+# Find and link pthread
+find_package(Threads REQUIRED)
+target_link_libraries(thermal Threads::Threads)
 
 # Compiler-specific options
 if(MSVC)

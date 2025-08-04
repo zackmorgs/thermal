@@ -139,9 +139,9 @@ void Server::cleanupDisconnectedClients() {
     auto it = sseClients.begin();
     while (it != sseClients.end()) {
         // Test connection with a non-blocking send
-        int result = send(*it, "", 0, MSG_NOSIGNAL);
-        if (result == SOCKET_ERROR) {
-            closesocket(*it);
+        ssize_t result = send(*it, "", 0, MSG_NOSIGNAL);
+        if (result < 0) {
+            close(*it);
             it = sseClients.erase(it);
         } else {
             ++it;
@@ -189,7 +189,7 @@ std::string_view getFileExtension(std::string_view path) {
 }
 
 // Use move semantics for large strings
-void Server::serveFileOptimized(SOCKET clientSocket, const std::string& requestedPath) {
+void Server::serveFileOptimized(int clientSocket, const std::string& requestedPath) {
     std::string fullPath = startPath + "/" + requestedPath;
     
     // Check cache first
@@ -225,18 +225,18 @@ void Server::serveFileOptimized(SOCKET clientSocket, const std::string& requeste
 // ========================
 
 // Use TCP_NODELAY for lower latency
-void Server::optimizeSocket(SOCKET sock) {
+void Server::optimizeSocket(int sock) {
     int flag = 1;
-    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
+    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
     
     // Set larger buffer sizes
     int bufferSize = 64 * 1024; // 64KB
-    setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char*)&bufferSize, sizeof(int));
-    setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char*)&bufferSize, sizeof(int));
+    setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &bufferSize, sizeof(int));
+    setsockopt(sock, SOL_SOCKET, SO_SNDBUF, &bufferSize, sizeof(int));
 }
 
 // Use vectored I/O for sending headers + content efficiently
-void Server::sendResponse(SOCKET sock, const std::string& headers, const std::string& body) {
+void Server::sendResponse(int sock, const std::string& headers, const std::string& body) {
     std::vector<char> response;
     response.reserve(headers.size() + body.size());
     

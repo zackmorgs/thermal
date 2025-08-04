@@ -44,3 +44,4 @@ Thumbs.db
 
 # ignore test server directory
 test_server/
+build/bin/thermal

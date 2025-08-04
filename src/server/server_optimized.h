@@ -8,7 +8,10 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
-#include <winsock2.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 class Server {
 public:
@@ -29,7 +32,7 @@ private:
     std::unordered_set<std::string> ignoredDirectories{".git", ".vs", "node_modules", "build"};
     
     // Connection management
-    std::vector<SOCKET> sseClients;
+    std::vector<int> sseClients; // Using int instead of SOCKET
     std::mutex sseClientsMutex;
     
     // Thread pool for handling requests
@@ -49,10 +52,10 @@ private:
     void checkForChanges();
     void scanDirectory();
     void notifyClients(const std::string& message);
-    void handleClient(SOCKET clientSocket);
-    void handleSSE(SOCKET clientSocket);
-    void serveFile(SOCKET clientSocket, const std::string& requestedPath);
-    void serveHTMLWithHotReload(SOCKET clientSocket, const std::string& fullPath);
+    void handleClient(int clientSocket);
+    void handleSSE(int clientSocket);
+    void serveFile(int clientSocket, const std::string& requestedPath);
+    void serveHTMLWithHotReload(int clientSocket, const std::string& fullPath);
     std::string getContentType(const std::string& path);
     
     // Optimization methods

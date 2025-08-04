@@ -6,6 +6,7 @@ I haven't coded in C++ in a while, so this is me messing around with it for the 
 
 ## Features
 - Fast static C++ server
+- Hot-Reload capability
 - [h5bp](https://github.com/h5bp/html5-boilerplate) boilerplate in `./public`
 
 ### Project Goals (To-Do)

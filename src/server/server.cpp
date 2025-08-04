@@ -28,7 +28,7 @@ void Server::startWatching() {
     
     while (true) {
         checkForChanges();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Check every second
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // Reduced from 1000ms to 1500ms
     }
 }
 
@@ -36,7 +36,7 @@ void Server::startServer() {
     int port = 8080;
     
     std::cout << "Server started at path: " << startPath << std::endl;
-    
+
     // Initialize Winsock
     WSADATA wsaData;
     int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -78,6 +78,8 @@ void Server::startServer() {
     std::cout << "Server is running on http://localhost:8080" << std::endl;
     std::cout << "Serving files from: " << startPath << std::endl;
     
+    system("start http://localhost:8080");
+
     // Accept connections
     while (true) {
         SOCKET clientSocket = accept(listenSocket, NULL, NULL);
@@ -102,6 +104,16 @@ void Server::checkForChanges() {
         for (const auto& entry : fs::recursive_directory_iterator(startPath)) {
             if (entry.is_regular_file()) {
                 const std::string filePath = entry.path().string();
+                
+                // Quick optimization: Skip common temp files
+                const auto filename = entry.path().filename().string();
+                if (filename.starts_with(".") || 
+                    filename.ends_with(".tmp") || 
+                    filename.ends_with(".swp") ||
+                    filename.ends_with(".log")) {
+                    continue; // Skip temp/hidden files
+                }
+                
                 const auto lastWriteTime = entry.last_write_time();
                 
                 auto it = fileTimestamps.find(filePath);

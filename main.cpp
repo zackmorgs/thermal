@@ -46,11 +46,21 @@ int main(int argc, char* argv[])
 		// if path is found, create a server
 		Server server(pathArg, watchMode);
 		
-		if (!watchMode) {
-			// Start HTTP server
+		if (watchMode) {
+			// In watch mode, start server in a separate thread and then watch
+			std::thread serverThread([&server]() {
+				server.startServer();
+			});
+			
+			std::cout << "Starting watch mode..." << std::endl;
+			server.startWatching();
+			
+			// This will never be reached due to infinite loop in startWatching()
+			serverThread.join();
+		} else {
+			// Normal mode - just start the server
 			server.startServer();
 		}
-		// If watchMode is true, startWatching() is already called in constructor
 	} else {
 		std::cerr << "Error: No directory path provided." << std::endl;
 		std::cerr << "Usage: " << argv[0] << " [-w] <directory_path>" << std::endl;

@@ -25,13 +25,14 @@ public:
         }
         this->watchMode = watchMode;
         std::cout << "Server initialized with start path: " << this->startPath << std::endl;
-        if (watchMode) {
-            this->startWatching();
-        }
+        // Don't automatically start watching - let main() control this
     }
 
     void startWatching() {
         std::cout << "Watch mode is enabled" << std::endl;
+        
+        // Initial scan to populate fileTimestamps
+        scanDirectory();
         
         while (true) {
             checkForChanges();
@@ -144,6 +145,20 @@ private:
             }
         } catch (const std::exception& e) {
             std::cerr << "Error checking for changes: " << e.what() << std::endl;
+        }
+    }
+
+    void scanDirectory() {
+        std::cout << "Scanning directory for initial file state..." << std::endl;
+        try {
+            for (const auto& entry : fs::recursive_directory_iterator(startPath)) {
+                if (entry.is_regular_file()) {
+                    fileTimestamps[entry.path().string()] = entry.last_write_time();
+                }
+            }
+            std::cout << "Found " << fileTimestamps.size() << " files to monitor" << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "Error scanning directory: " << e.what() << std::endl;
         }
     }
 

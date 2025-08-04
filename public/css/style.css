@@ -269,6 +269,12 @@ body {
   text-align: center;
   color: #e50314;
 }
+.hero p {
+  color: #222121;
+}
+#logo {
+  color:#b2000d;
+}
 
 #logo_img {
   max-width:6rem;

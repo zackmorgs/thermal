@@ -28,7 +28,7 @@ I haven't coded in C++ in a while, so this is me messing around with it for the 
 - Clone the repo
     - `git clone https://github.com/zackmorgs/thermal.git ./my-project`
 - Compile it:
-    - `cd ./build; cmake --build .`
+    - `cd ./my-project/build; cmake --build .`
 - Run the executable
     - `./Debug/thermal.exe "C:\path\to\your\server\root" -w`
 

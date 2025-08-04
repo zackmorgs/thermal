@@ -1,7 +1,5 @@
-﻿# CMakeList.txt : CMake project for cpp-hot-reload-server, include source and define
-# project specific logic here.
-#
-cmake_minimum_required (VERSION 3.8)
+﻿# CMakeList.txt : CMake project for thermal server
+cmake_minimum_required(VERSION 3.15)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -9,13 +7,42 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("thermal")
+project("thermal" VERSION 1.0.0 LANGUAGES CXX)
 
-# Add source to this project's executable.
-add_executable (thermal "main.cpp")
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET thermal PROPERTY CXX_STANDARD 20)
+# Include directories
+include_directories(src)
+
+# Source files
+set(SOURCES
+    src/main.cpp
+    src/server/server.cpp
+)
+
+# Headers
+set(HEADERS
+    src/server/server.h
+)
+
+# Create executable
+add_executable(thermal ${SOURCES} ${HEADERS})
+
+# Windows-specific libraries
+if(WIN32)
+    target_link_libraries(thermal ws2_32)
 endif()
 
-# TODO: Add tests and install targets if needed.
+# Compiler-specific options
+if(MSVC)
+    target_compile_options(thermal PRIVATE /W4)
+else()
+    target_compile_options(thermal PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+# Set output directory
+set_target_properties(thermal PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)

@@ -1,14 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\zackm\source\repos\thermal\main.cpp">
+    <ClCompile Include="C:\Users\zackm\source\repos\thermal\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\zackm\source\repos\thermal\src\server\server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\zackm\source\repos\thermal\src\server\server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Users\zackm\source\repos\thermal\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{B3D94B89-C7D9-32C3-94C2-5C0076A12B8E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{167D3792-CDA4-3CC8-9A28-AED1E59D7D33}</UniqueIdentifier>
     </Filter>

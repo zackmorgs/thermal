@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "server.cpp"
+#include "server/server.h"
 
 namespace fs = std::filesystem;
 

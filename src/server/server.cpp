@@ -12,12 +12,13 @@
 
 namespace fs = std::filesystem;
 
-Server::Server(const std::string& startPath, bool watchMode) 
-    : startPath(startPath), watchMode(watchMode) {
+Server::Server(const std::string& startPath, bool watchMode, int port) 
+    : startPath(startPath), watchMode(watchMode), port(port) {
     if (this->startPath.empty()) {
         this->startPath = "./";
     }
     std::cout << "Server initialized with start path: " << this->startPath << std::endl;
+    std::cout << "Port configured: " << this->port << std::endl;
 }
 
 void Server::startWatching() {
@@ -33,10 +34,8 @@ void Server::startWatching() {
 }
 
 void Server::startServer() {
-    int port = 8080;
-    
     std::cout << "Server started at path: " << startPath << std::endl;
-
+    
     // Initialize Winsock
     WSADATA wsaData;
     int iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -57,11 +56,11 @@ void Server::startServer() {
     sockaddr_in service;
     service.sin_family = AF_INET;
     service.sin_addr.s_addr = INADDR_ANY;
-    service.sin_port = htons(port); // Port 8080
+    service.sin_port = htons(port); // Use configurable port
     
     // Bind socket
     if (bind(listenSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
-        std::cerr << "Bind failed: " << WSAGetLastError() << std::endl;
+        std::cerr << "Bind failed on port " << port << ": " << WSAGetLastError() << std::endl;
         closesocket(listenSocket);
         WSACleanup();
         return;
@@ -75,10 +74,10 @@ void Server::startServer() {
         return;
     }
     
-    std::cout << "Server is running on http://localhost:8080" << std::endl;
-    std::cout << "Serving files from: " << startPath << std::endl;
-    
-    system("start http://localhost:8080");
+    std::cout << "Server is running on http://localhost:" << port << std::endl;
+    std::cout << "Serving files from: " << startPath << std::endl; 
+    std::string browserStart = "start http://localhost:" + std::to_string(port);  
+    system(browserStart.c_str());
 
     // Accept connections
     while (true) {

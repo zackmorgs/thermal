@@ -9,7 +9,7 @@
 
 class Server {
 public:
-    Server(const std::string& startPath, bool watchMode = false);
+    Server(const std::string& startPath, bool watchMode = false, int port = 8080);
     
     void startWatching();
     void startServer();
@@ -17,6 +17,7 @@ public:
 private:
     std::string startPath;
     bool watchMode;
+    int port;
     std::unordered_map<std::string, std::filesystem::file_time_type> fileTimestamps;
     std::vector<SOCKET> sseClients; // Track SSE connections for hot reload
     std::mutex sseClientsMutex;

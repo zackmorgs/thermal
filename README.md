@@ -29,7 +29,18 @@ I haven't coded in C++ in a while, so this is me messing around with it for the 
     - `git clone https://github.com/zackmorgs/thermal.git ./my-project`
 - Compile it:
     - `cd ./my-project/build; cmake --build .`
-- Run the executable
+### Usage
+- Run the server:
+    - `./Debug/thermal.exe "C:\path\to\your\server\root"`
+- Run with watch mode for hot-reload:
     - `./Debug/thermal.exe "C:\path\to\your\server\root" -w`
+- Run on a custom port:
+    - `./Debug/thermal.exe "C:\path\to\your\server\root" -p 3000`
+- Combine watch mode and custom port:
+    - `./Debug/thermal.exe "C:\path\to\your\server\root" -w -p 3000`
+
+### Command Line Options
+- `-w` : Enable watch mode for hot-reload (auto-refresh browser on file changes)
+- `-p <port>` : Specify port number (default: 8080, range: 1-65535)
 
 Also available to build in Visual Studio

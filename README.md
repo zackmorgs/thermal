@@ -1,4 +1,11 @@
+
+<div align="left">
+  <img src="./public/img/svg/thermal_logo.svg" alt="Thermal Logo" width="100" height="100">
+</div>
+
 # thermal
+
+
 I haven't coded in C++ in a while, so this is me messing around with it for the first time in like 5 years. 
 
 ## Demonstration

@@ -21,12 +21,6 @@ A Unix/MacOS HTTP server with hot-reload capability, written in C++.
 
 ## Quick Setup for Ubuntu
 
-### Automatic Setup
-Run the setup script to install dependencies and configure the environment:
-```bash
-./setup-ubuntu.sh
-```
-
 ### Manual Setup
 1. **Install dependencies:**
    ```bash
